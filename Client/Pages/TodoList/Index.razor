@@ -1,0 +1,40 @@
+﻿@page "/TodoList/Index"
+@inject HttpClient Http
+@using System.Text.Json
+@using BlazorAppTest.Client.Models.ViewModels;
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Title</th>
+            @*<th>TodoItem</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in todolist)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Title</td>
+                @*<td>@string.Join('、', item.TodoItems.Select(a => a.TaskName))</td>*@
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    public List<TodoList> todolist { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tt = "";
+        todolist = await Http.GetFromJsonAsync<List<TodoList>>("api/TodoList_API", new JsonSerializerOptions
+        {
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+            PropertyNamingPolicy = null
+        });
+
+        Console.WriteLine(todolist[0]);
+    }
+}
