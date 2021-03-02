@@ -1,0 +1,76 @@
+﻿@*<tr style="color:@color;font-size:@size;">
+        <td>@TaskName </td>
+        <td><button class="btn btn-danger btn-sm" @onclick="Delete">delete</button></td>
+    </tr>
+
+    @code {
+        [Parameter]
+        public string TaskName { get; set; }
+
+        [Parameter]
+        public int ItemIndex { get; set; }
+
+        [Parameter]
+        public EventCallback<int> DeleteItem { get; set; }
+
+        void Delete()
+        {
+            DeleteItem.InvokeAsync(ItemIndex);
+        }
+
+        [CascadingParameter]
+        public string color { get; set; }
+
+        [CascadingParameter]
+        public string size { get; set; }
+    }*@
+
+@*另外一種寫法是使用class，參考以下程式碼：*@
+@*@inject IJSRuntime js*@
+@*@using static MainLayout;*@
+@*<tr>
+        <td>@TaskName</td>
+        <td><button class="btn btn-danger btn-sm" @onclick="Delete">delete</button></td>
+    </tr>*@
+
+<div class="card-text">
+    <div class="form-check">
+        <input class="form-check-input" @onchange="UpdateCompleted" type="checkbox" value="" id="@ItemIndex">
+        <label class="form-check-label text-muted" for="@ItemIndex">@TaskName</label>
+    </div>
+</div>
+
+@code{
+    [Parameter]
+    public string TaskName { get; set; }
+
+    [Parameter]
+    public int ItemIndex { get; set; }
+
+    [Parameter]
+    public int Sort { get; set; }
+
+    [Parameter]
+    public int ParentId { get; set; }
+
+    void UpdateCompleted()
+    {
+        //DeleteItem.InvokeAsync(ItemIndex);
+    }
+    //[Parameter]
+    //public EventCallback<int> DeleteItem { get; set; }
+
+    ////void Delete()
+    ////{
+    ////    DeleteItem.InvokeAsync(ItemIndex);
+    ////}
+
+    //private async Task Delete()
+    //{
+    //    bool result = await js.InvokeAsync<bool>("SweetConfirm", "Delete", $"確定要刪除{TaskName}?");
+    //    if (result)
+    //    {
+    //        await DeleteItem.InvokeAsync(ItemIndex);
+    //    }
+    //}
+}

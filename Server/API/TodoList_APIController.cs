@@ -21,16 +21,14 @@ namespace BlazorAppTest.Server.API
         [HttpGet]
         public IEnumerable<TodoList> Get()
         {
-            var todolist = _dbcontext.Set<TodoList>().ToList();
-
-            return todolist;
+            return _dbcontext.Set<TodoList>().Include(x => x.TodoItems).ToList();
         }
 
         // GET api/<TodoList_APIController>/5
         [HttpGet("{id}")]
         public string Get(int id)
         {
-            return "value";
+            return "not work";
         }
 
         // POST api/<TodoList_APIController>

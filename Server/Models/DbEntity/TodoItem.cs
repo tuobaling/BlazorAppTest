@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorAppTest.Server.Models.DbEntity
 {
+    [Serializable]
     [Table("TodoItem")]
     public partial class TodoItem
     {
@@ -16,6 +17,8 @@ namespace BlazorAppTest.Server.Models.DbEntity
         [Required]
         public string TaskName { get; set; }
         public int ListId { get; set; }
+        public bool? Completed { get; set; }
+        public int? Sort { get; set; }
 
         [ForeignKey(nameof(ListId))]
         [InverseProperty(nameof(TodoList.TodoItems))]

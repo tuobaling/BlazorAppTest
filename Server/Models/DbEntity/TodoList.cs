@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorAppTest.Server.Models.DbEntity
 {
+    [Serializable]
     [Table("TodoList")]
     public partial class TodoList
     {
@@ -20,6 +21,7 @@ namespace BlazorAppTest.Server.Models.DbEntity
         public int Id { get; set; }
         [Required]
         public string Title { get; set; }
+        public int Sort { get; set; }
 
         [InverseProperty(nameof(TodoItem.List))]
         public virtual ICollection<TodoItem> TodoItems { get; set; }

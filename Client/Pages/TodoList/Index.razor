@@ -2,39 +2,108 @@
 @inject HttpClient Http
 @using System.Text.Json
 @using BlazorAppTest.Client.Models.ViewModels;
+@using BlazorAppTest.Client.Shared.TodoList;
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Title</th>
-            @*<th>TodoItem</th>*@
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in todolist)
-        {
-            <tr>
-                <td>@item.Id</td>
-                <td>@item.Title</td>
-                @*<td>@string.Join('、', item.TodoItems.Select(a => a.TaskName))</td>*@
-            </tr>
-        }
-    </tbody>
-</table>
-
+<h1>TodoList</h1>
+<p>This component demonstrates fetching TodoList data from the server.</p>
+<hr />
+<div class="container">
+    <div class="row">
+        <div class="col-10">
+            <input type="text" placeholder="Add a TodoList" @bind="newTodoText" /><button class="btn btn-primary" @onclick="AddListName">Add</button>
+        </div>
+        <div class="col-1">
+            <button class="btn btn-danger" @onclick="Delete"><span class="oi oi-trash"></span></button>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-4">
+            <div class="card-deck">
+                @if (todoLists == null)
+                {
+                    <p><em>Loading...</em></p>}
+                else
+                {
+                    foreach (var item in todoLists)
+                    {
+                        <List title="@item.Title" todoItems="@item.TodoItems"></List>}
+                }
+            </div>
+        </div>
+    </div>
+</div>
 @code {
-    public List<TodoList> todolist { get; set; }
+    private List<TodoList> todoLists;
+    private string newTodoText;
+    private string addOpention;
 
     protected override async Task OnInitializedAsync()
     {
-        var tt = "";
-        todolist = await Http.GetFromJsonAsync<List<TodoList>>("api/TodoList_API", new JsonSerializerOptions
+        todoLists = await Http.GetFromJsonAsync<List<TodoList>>("api/TodoList/Index", new JsonSerializerOptions
         {
             ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
             PropertyNamingPolicy = null
         });
-
-        Console.WriteLine(todolist[0]);
     }
+
+
+    protected async Task AddListName()
+    {
+        //TODO:要加資料驗證
+        if (!string.IsNullOrEmpty(newTodoText))
+        {
+            //int lastId = await Http.GetFromJsonAsync<int>("api/TodoList/GetLastId");
+            //int newId = lastId + 1;
+
+            int lastSort = await Http.GetFromJsonAsync<int>("/api/TodoList/GetLastSort");
+            int newSort = lastSort + 1;
+
+            TodoList todoList = new TodoList
+            {
+                Title = newTodoText,
+                Sort = newSort
+            };
+
+            var response = await Http.PostAsJsonAsync<TodoList>("api/TodoList/CreateList", todoList, new JsonSerializerOptions
+            {
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+                PropertyNamingPolicy = null
+            });
+
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            //if (response.IsSuccessStatusCode)
+            //{
+
+            //    //Account mewAccount = JsonConvert.DeserializeObject<Account>(responseText);
+            //    //NavigationManager.NavigateTo($"/TodoList/Index");
+            //}
+            //else
+            //{
+            //    //NavigationManager.NavigateTo("CreateAccount");
+            //}
+        }
+    }
+
+    void Delete()
+    {
+
+    }
+
+    //void Add()
+    //{
+    //    //if (!string.IsNullOrEmpty(newTodoItem))
+    //    //{
+    //    //    TodoLists.Add(newTodoItem);
+    //    //    newTodoItem = "";
+    //    //}
+    //    if (!string.IsNullOrEmpty(newTodoText)) { }
+    //}
+
+
+    //void DeleteCallback(int index)
+    //{
+    //    TodoLists.RemoveAt(index);
+    //}
 }

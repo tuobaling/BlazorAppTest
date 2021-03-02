@@ -1,0 +1,25 @@
+﻿@using BlazorAppTest.Client.Models.ViewModels;
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@title</h5>
+        <hr />
+        @foreach (var item in todoItems)
+        {
+            <Todo TaskName="@item.TaskName" ItemIndex="@item.Id" Sort="@item.Sort" ParentId="@item.ListId" />
+        }
+        @*<div class="card-text"><span class="text-muted">Price：11111</span></div>*@
+    </div>
+</div>
+
+
+@code{
+    //0302 Edit
+    [Parameter]
+    public List<TodoItem> todoItems { get; set; }
+
+    [Parameter]
+    public string title { get; set; }
+
+
+}

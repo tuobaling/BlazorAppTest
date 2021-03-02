@@ -1,0 +1,46 @@
+﻿<div>
+    <table class="table table-hover">
+        <tr>
+            <th>待辦事項</th>
+            <th>刪除</th>
+        </tr>
+        @for (int i = 0; i < TodoLists.Count; i++)
+        {
+            <Todo ItemName="@TodoLists[i]" ItemIndex="@i" DeleteItem="@DeleteCallback" />
+        }
+    </table>
+</div>
+
+<div>
+    <label>New Todo:</label> <input type="text" @bind="newTodoItem" /> <button class="btn btn-primary" @onclick="Add">Add</button>
+</div>
+
+@code{
+    @using static MainLayout;
+
+    private string newTodoItem;
+    private List<string> TodoLists;
+
+    protected override void OnInitialized()
+    {
+        TodoLists = new List<string>()
+{
+            "Buy Milk",
+            "Buy Apple"
+        };
+    }
+
+    void Add()
+    {
+        if (!string.IsNullOrEmpty(newTodoItem))
+        {
+            TodoLists.Add(newTodoItem);
+            newTodoItem = "";
+        }
+    }
+
+    void DeleteCallback(int index)
+    {
+        TodoLists.RemoveAt(index);
+    }
+}

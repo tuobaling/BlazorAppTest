@@ -1,3 +1,4 @@
+using BlazorAppTest.Server.DataAccess;
 using BlazorAppTest.Server.Models.DbEntity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,14 +26,14 @@ namespace BlazorAppTest.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<TodoList_Blazor_NET5Context>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllersWithViews();
-            services.AddRazorPages();
-
             services.AddControllersWithViews().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            });
+            }); 
+            services.AddRazorPages();
+            services.AddTransient<TodoListDataAccessLayer>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

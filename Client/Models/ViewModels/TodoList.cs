@@ -11,14 +11,15 @@ namespace BlazorAppTest.Client.Models.ViewModels
     {
         public TodoList()
         {
-            
+            TodoItems = new List<TodoItem>();
         }
 
 
-        public int Id { get; set; }
+        public int? Id { get; set; }
    
         public string Title { get; set; }
 
-        public virtual ICollection<TodoItem> TodoItems { get; set; }
+        public int? Sort { get; set; }
+        public virtual List<TodoItem> TodoItems { get; set; }
     }
 }

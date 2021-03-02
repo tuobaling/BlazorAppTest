@@ -13,6 +13,7 @@ namespace BlazorAppTest.Client.Models.ViewModels
         public string TaskName { get; set; }
         public int ListId { get; set; }
 
-        public virtual TodoList List { get; set; }
+        public bool Completed { get; set; }
+        public int Sort { get; set; }
     }
 }
