@@ -15,7 +15,7 @@ namespace BlazorAppTest.Client.Models.ViewModels
         }
 
 
-        public int? Id { get; set; }
+        public int? ListId { get; set; }
    
         public string Title { get; set; }
 

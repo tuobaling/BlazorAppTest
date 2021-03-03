@@ -5,6 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using BlazorAppTest.Server.Models.DbEntity;
 using BlazorAppTest.Server.DataAccess;
+using System.Net.Http;
+using System.Net;
+using System.Text;
+using System.Text.Json;
 
 namespace BlazorAppTest.Server.Controllers
 {
@@ -32,32 +36,28 @@ namespace BlazorAppTest.Server.Controllers
 
         [HttpPost]
         [Route("api/[controller]/CreateList")]
-        public void CreateList([FromBody] TodoList todoList)
+        public HttpResponseMessage CreateList([FromBody] string jsonRequest)
         {
+            var todoList = JsonSerializer.Deserialize<TodoList>(jsonRequest);
             objtodoList.AddTodoList(todoList);
+            return new HttpResponseMessage { Content = new StringContent("Is Scuessed !", Encoding.GetEncoding("UTF-8"), "application/json") };
         }
-
-        //[HttpGet("GetLastId")]
-        //[Route("api/[controller]/GetLastId")]
-        //public int GetLastId() => objtodoList.GetLastId();
 
         [HttpGet]
         [Route("api/[controller]/GetLastSort")]
         public int GetLastSort() => objtodoList.GetLastSort();
 
+        [HttpGet]
+        [Route("api/[controller]/GetLastSortByItem")]
+        public int GetLastSortByItem(int listId) => objtodoList.GetLastSortByItem(listId);
+
         [HttpPost]
         [Route("api/[controller]/CreateTask")]
-        public void CreateTask([FromBody] int listId, string newTodoText)
+        public HttpResponseMessage CreateTask([FromBody] string jsonRequest)
         {
-            if (ModelState.IsValid)
-            {
-                TodoItem todoItem = new TodoItem
-                {
-                    ListId = listId,
-                    TaskName = newTodoText
-                };
-                objtodoList.AddTodoItem(todoItem);
-            }
+            var todoItem = JsonSerializer.Deserialize<TodoItem>(jsonRequest);
+            objtodoList.AddTodoItem(todoItem);
+            return new HttpResponseMessage { Content = new StringContent("Is Scuessed !", Encoding.GetEncoding("UTF-8"), "application/json") };
         }
 
         [HttpGet]
@@ -70,6 +70,15 @@ namespace BlazorAppTest.Server.Controllers
         {
             if (ModelState.IsValid)
                 objtodoList.UpdateTodoList(todoList);
+        }
+
+        [HttpPut]
+        [Route("api/[controller]/EditByItem")]
+        public HttpResponseMessage EditByItem([FromBody] string jsonRequest)
+        {
+            var todoItem = JsonSerializer.Deserialize<TodoItem>(jsonRequest);
+            objtodoList.UpdateTodoItem(todoItem);
+            return new HttpResponseMessage { Content = new StringContent("Is Scuessed !", Encoding.GetEncoding("UTF-8"), "application/json") };
         }
 
         [HttpDelete]

@@ -9,7 +9,7 @@ namespace BlazorAppTest.Server.DataAccess
 {
     public class TodoListDataAccessLayer
     {
-        private TodoList_Blazor_NET5Context _dbcontext;
+        private readonly TodoList_Blazor_NET5Context _dbcontext;
 
         public TodoListDataAccessLayer(TodoList_Blazor_NET5Context dbcontext) => _dbcontext = dbcontext;
 
@@ -18,7 +18,7 @@ namespace BlazorAppTest.Server.DataAccess
         {
             try
             {
-                return _dbcontext.TodoLists.Include(x => x.TodoItems).ToList();
+                return _dbcontext.TodoLists.Include(x => x.TodoItems).OrderByDescending(t => t.ListId).ToList();
             }
             catch
             {
@@ -56,11 +56,28 @@ namespace BlazorAppTest.Server.DataAccess
         }
 
         //To Update the records of a particluar TodoList    
-        public void UpdateTodoList(TodoList TodoList)
+        public void UpdateTodoList(TodoList todoList)
         {
             try
             {
-                _dbcontext.Entry(TodoList).State = EntityState.Modified;
+                _dbcontext.Entry(todoList).State = EntityState.Modified;
+                _dbcontext.SaveChanges();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        //To Update the records of a particluar TodoItem    
+        public void UpdateTodoItem(TodoItem todoItem)
+        {
+            try
+            {
+                TodoItem item = _dbcontext.TodoItems.Find(todoItem.ItemId);
+                item.Completed = todoItem.Completed;
+
+                _dbcontext.Entry(item).State = EntityState.Modified;
                 _dbcontext.SaveChanges();
             }
             catch
@@ -102,7 +119,7 @@ namespace BlazorAppTest.Server.DataAccess
         {
             try
             {
-                return _dbcontext.TodoLists.OrderByDescending(t => t.Id).First().Id;
+                return (int)_dbcontext.TodoLists.OrderByDescending(t => t.ListId).First().ListId;
             }
             catch
             {
@@ -115,7 +132,21 @@ namespace BlazorAppTest.Server.DataAccess
         {
             try
             {
-                return _dbcontext.TodoLists.OrderByDescending(t => t.Sort).First().Sort;
+                return (int)_dbcontext.TodoLists.OrderByDescending(t => t.Sort).First().Sort;
+            }
+            catch
+            {
+                throw;
+            }
+
+        }
+
+        public int GetLastSortByItem(int listId)
+        {
+            try
+            {
+                var queryResult = _dbcontext.TodoItems.Where(w => w.ListId == listId).OrderByDescending(t => t.Sort);
+                return queryResult.Any() ? (int)queryResult.First().Sort : 1;
             }
             catch
             {

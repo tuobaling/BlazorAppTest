@@ -9,7 +9,7 @@ namespace BlazorAppTest.Client.Models.ViewModels
 {
     public partial class TodoItem
     {
-        public int Id { get; set; }
+        public int ItemId { get; set; }
         public string TaskName { get; set; }
         public int ListId { get; set; }
 

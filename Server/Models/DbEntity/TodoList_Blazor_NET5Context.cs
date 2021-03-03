@@ -26,7 +26,7 @@ namespace BlazorAppTest.Server.Models.DbEntity
 
             modelBuilder.Entity<TodoItem>(entity =>
             {
-                entity.Property(e => e.Id).HasComment("流水編號");
+                entity.Property(e => e.ItemId).HasComment("流水編號");
 
                 entity.Property(e => e.Completed).HasComment("已完成");
 
@@ -45,7 +45,7 @@ namespace BlazorAppTest.Server.Models.DbEntity
 
             modelBuilder.Entity<TodoList>(entity =>
             {
-                entity.Property(e => e.Id).HasComment("流水編號");
+                entity.Property(e => e.ListId).HasComment("流水編號");
 
                 entity.Property(e => e.Sort).HasComment("順序");
 

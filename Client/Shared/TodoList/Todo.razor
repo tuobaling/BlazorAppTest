@@ -1,42 +1,19 @@
-﻿@*<tr style="color:@color;font-size:@size;">
-        <td>@TaskName </td>
-        <td><button class="btn btn-danger btn-sm" @onclick="Delete">delete</button></td>
-    </tr>
-
-    @code {
-        [Parameter]
-        public string TaskName { get; set; }
-
-        [Parameter]
-        public int ItemIndex { get; set; }
-
-        [Parameter]
-        public EventCallback<int> DeleteItem { get; set; }
-
-        void Delete()
-        {
-            DeleteItem.InvokeAsync(ItemIndex);
-        }
-
-        [CascadingParameter]
-        public string color { get; set; }
-
-        [CascadingParameter]
-        public string size { get; set; }
-    }*@
-
-@*另外一種寫法是使用class，參考以下程式碼：*@
-@*@inject IJSRuntime js*@
-@*@using static MainLayout;*@
-@*<tr>
-        <td>@TaskName</td>
-        <td><button class="btn btn-danger btn-sm" @onclick="Delete">delete</button></td>
-    </tr>*@
+﻿@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using BlazorAppTest.Client.Models.ViewModels;
+@using System.Text.Json
 
 <div class="card-text">
     <div class="form-check">
-        <input class="form-check-input" @onchange="UpdateCompleted" type="checkbox" value="" id="@ItemIndex">
-        <label class="form-check-label text-muted" for="@ItemIndex">@TaskName</label>
+        @if (IsCompeleted)
+        {
+            <input class="form-check-input" @onchange="(() => UpdateCompleted(!IsCompeleted))" type="checkbox" value="" id="@ItemIndex" checked="checked">
+            <label class="form-check-label text-muted" for="@ItemIndex"><del>@TaskName</del></label>}
+        else
+        {
+            <input class="form-check-input" @onchange="(() => UpdateCompleted(!IsCompeleted))" type="checkbox" value="" id="@ItemIndex">
+            <label class="form-check-label text-muted" for="@ItemIndex">@TaskName</label>}
+
     </div>
 </div>
 
@@ -53,10 +30,27 @@
     [Parameter]
     public int ParentId { get; set; }
 
-    void UpdateCompleted()
+    [Parameter]
+    public bool IsCompeleted { get; set; }
+
+    private async Task UpdateCompleted(bool isCompeleted)
     {
-        //DeleteItem.InvokeAsync(ItemIndex);
+        //// TODO:要加資料驗證
+        var todoItem = new TodoItem
+        {
+            ItemId = ItemIndex,
+            Completed = isCompeleted
+        };
+
+        var jsonText = JsonSerializer.Serialize(todoItem);
+        var response = await Http.PutAsJsonAsync<string>("api/TodoList/EditByItem", jsonText);
+
+        if (response.IsSuccessStatusCode)
+            NavigationManager.NavigateTo("/TodoList/Index", true);
+        else
+            Console.WriteLine(response.Content);
     }
+
     //[Parameter]
     //public EventCallback<int> DeleteItem { get; set; }
 

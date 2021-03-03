@@ -18,10 +18,10 @@ namespace BlazorAppTest.Server.Models.DbEntity
         }
 
         [Key]
-        public int Id { get; set; }
+        public int? ListId { get; set; }
         [Required]
         public string Title { get; set; }
-        public int Sort { get; set; }
+        public int? Sort { get; set; }
 
         [InverseProperty(nameof(TodoItem.List))]
         public virtual ICollection<TodoItem> TodoItems { get; set; }

@@ -1,5 +1,6 @@
 ﻿@page "/TodoList/Index"
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 @using System.Text.Json
 @using BlazorAppTest.Client.Models.ViewModels;
 @using BlazorAppTest.Client.Shared.TodoList;
@@ -9,16 +10,26 @@
 <hr />
 <div class="container">
     <div class="row">
-        <div class="col-10">
-            <input type="text" placeholder="Add a TodoList" @bind="newTodoText" /><button class="btn btn-primary" @onclick="AddListName">Add</button>
+        <div class="col">
+            <div class="float-right">
+                <button class="btn btn-danger" @onclick="Reload"><span class="oi oi-reload"></span></button>
+                <button class="btn btn-danger" @onclick="Delete"><span class="oi oi-trash"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-11">
+            <input type="text" class="form-control" placeholder="Add a TodoList" @bind="newTodoText" />
         </div>
         <div class="col-1">
-            <button class="btn btn-danger" @onclick="Delete"><span class="oi oi-trash"></span></button>
+            <div class="float-right">
+                <button class="btn btn-primary" @onclick="AddListName">Add</button>
+            </div>
         </div>
     </div>
     <br />
     <div class="row">
-        <div class="col-4">
+        <div class="col">
             <div class="card-deck">
                 @if (todoLists == null)
                 {
@@ -27,7 +38,7 @@
                 {
                     foreach (var item in todoLists)
                     {
-                        <List title="@item.Title" todoItems="@item.TodoItems"></List>}
+                        <List todoList="@item"></List>}
                 }
             </div>
         </div>
@@ -36,7 +47,6 @@
 @code {
     private List<TodoList> todoLists;
     private string newTodoText;
-    private string addOpention;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,62 +58,36 @@
     }
 
 
-    protected async Task AddListName()
+    private async Task AddListName()
     {
         //TODO:要加資料驗證
         if (!string.IsNullOrEmpty(newTodoText))
         {
-            //int lastId = await Http.GetFromJsonAsync<int>("api/TodoList/GetLastId");
-            //int newId = lastId + 1;
-
             int lastSort = await Http.GetFromJsonAsync<int>("/api/TodoList/GetLastSort");
             int newSort = lastSort + 1;
 
-            TodoList todoList = new TodoList
+            var todoList = new TodoList()
             {
                 Title = newTodoText,
                 Sort = newSort
             };
 
-            var response = await Http.PostAsJsonAsync<TodoList>("api/TodoList/CreateList", todoList, new JsonSerializerOptions
-            {
-                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-                PropertyNamingPolicy = null
-            });
+            var jsonText = JsonSerializer.Serialize(todoList);
 
-            var responseText = await response.Content.ReadAsStringAsync();
+            var response = await Http.PostAsJsonAsync<string>("api/TodoList/CreateList", jsonText);
 
-            //if (response.IsSuccessStatusCode)
-            //{
+            if (response.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("/TodoList/Index", true);
+            else
+                Console.WriteLine(response.Content);
 
-            //    //Account mewAccount = JsonConvert.DeserializeObject<Account>(responseText);
-            //    //NavigationManager.NavigateTo($"/TodoList/Index");
-            //}
-            //else
-            //{
-            //    //NavigationManager.NavigateTo("CreateAccount");
-            //}
         }
     }
+
+    void Reload() => NavigationManager.NavigateTo("/TodoList/Index", true);
 
     void Delete()
     {
 
     }
-
-    //void Add()
-    //{
-    //    //if (!string.IsNullOrEmpty(newTodoItem))
-    //    //{
-    //    //    TodoLists.Add(newTodoItem);
-    //    //    newTodoItem = "";
-    //    //}
-    //    if (!string.IsNullOrEmpty(newTodoText)) { }
-    //}
-
-
-    //void DeleteCallback(int index)
-    //{
-    //    TodoLists.RemoveAt(index);
-    //}
 }
