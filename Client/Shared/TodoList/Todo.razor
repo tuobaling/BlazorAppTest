@@ -20,19 +20,19 @@
 
 @code{
     [Parameter]
-    public EventCallback<HandleDragStartArgs> OnReturnItemId { get; set; }
+    public EventCallback<TodoListViewModel> OnReturnItemId { get; set; }
 
     [Parameter]
     public TodoItem todoItem { get; set; }
 
     [Parameter]
-    public HandleDragStartArgs dragStartArgs { get; set; }
+    public TodoListViewModel dragStartArgs { get; set; }
 
     protected override Task OnInitializedAsync()
     {
         if (dragStartArgs == null)
         {
-            dragStartArgs = new HandleDragStartArgs();
+            dragStartArgs = new TodoListViewModel();
         }
 
         return Task.CompletedTask;
@@ -63,12 +63,5 @@
 
         await OnReturnItemId.InvokeAsync(dragStartArgs);
 
-    }
-
-
-    public class HandleDragStartArgs
-    {
-        public int listId { get; set; }
-        public string fxName { get; set; }
     }
 }

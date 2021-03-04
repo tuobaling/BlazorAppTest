@@ -36,14 +36,18 @@
     <div class="row">
         <div class="col">
             <div class="card-deck">
-                @if (todoLists == null)
-                {
-                    <p><em>Loading...</em></p>}
-                else
-                {
-                    foreach (var item in todoLists)
+                @{
+                    if (todoLists == null)
                     {
-                        <List todoList="@item" OnReturnItemId="@ReturnItemId" OnReturnListId="@(() => ReturnListId(dragStartArgs))"></List>}
+                        <p><em>Loading...</em></p>
+                    }
+                    else
+                    {
+                        foreach (var item in todoLists)
+                        {
+                            <List todoList="@item" OnReturnListId="ReturnListId" OnReturnItemId="ReturnItemId"></List>
+                        }
+                    }
                 }
             </div>
         </div>
@@ -51,8 +55,9 @@
 </div>
 @code {
 
+    private TodoListViewModel dragStartArgs { get; set; }
+
     private List<TodoList> todoLists;
-    private HandleDragStartArgs dragStartArgs;
 
     private string newTodoText;
     private string functionName;
@@ -67,7 +72,7 @@
 
         if (dragStartArgs == null)
         {
-            dragStartArgs = new HandleDragStartArgs();
+            dragStartArgs = new TodoListViewModel();
         }
 
     }
@@ -115,19 +120,13 @@
 
     }
 
-    private void ReturnItemId(HandleDragStartArgs args)
+    private void ReturnItemId(TodoListViewModel args)
     {
         dragStartArgs = args;
     }
 
-    private void ReturnListId(HandleDragStartArgs args)
+    private void ReturnListId(TodoListViewModel args)
     {
         dragStartArgs = args;
-    }
-
-    public class HandleDragStartArgs
-    {
-        public int listId { get; set; }
-        public string fxName { get; set; }
     }
 }

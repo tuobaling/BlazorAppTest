@@ -2,6 +2,11 @@
 @inject NavigationManager NavigationManager
 @using System.Text.Json
 @using BlazorAppTest.Client.Models.ViewModels;
+@using BlazorAppTest.Client.Shared.TodoList;
+
+@*<button class="btn btn-primary" @onclick="TrySave">
+        保存
+    </button>*@
 
 <div class="card">
     <h5 class="card-header"
@@ -24,23 +29,25 @@
 
         @foreach (var item in todoList.TodoItems)
         {
-            <Todo todoItem="@item" OnReturnItemId="@ReturnItemId" />}
+            <Todo todoItem="@item" OnReturnItemId="ReturnItemId" />}
     </div>
 
 </div>
 
 @code{
     [Parameter]
-    public EventCallback<HandleDragStartArgs> OnReturnListId { get; set; }
+    public TodoListViewModel dragStartArgs { get; set; }
 
     [Parameter]
-    public EventCallback<HandleDragStartArgs> OnReturnItemId { get; set; }
+    public EventCallback<TodoListViewModel> OnReturnListId { get; set; }
+
+    [Parameter]
+    public EventCallback<TodoListViewModel> OnReturnItemId { get; set; }
 
     [Parameter]
     public TodoList todoList { get; set; }
 
-    [Parameter]
-    public HandleDragStartArgs dragStartArgs { get; set; }
+
 
     private string newItemText;
 
@@ -48,7 +55,7 @@
     {
         if (dragStartArgs == null)
         {
-            dragStartArgs = new HandleDragStartArgs();
+            dragStartArgs = new TodoListViewModel();
         }
 
         return Task.CompletedTask;
@@ -77,7 +84,7 @@
             Console.WriteLine(response.Content);
     }
 
-    private async Task ReturnItemId(HandleDragStartArgs args)
+    private async Task ReturnItemId(TodoListViewModel args)
     {
         dragStartArgs = args;
         await OnReturnItemId.InvokeAsync(dragStartArgs);
@@ -92,38 +99,5 @@
 
         await OnReturnListId.InvokeAsync(dragStartArgs);
     }
-
-    public class HandleDragStartArgs
-    {
-        public int listId { get; set; }
-        public string fxName { get; set; }
-    }
-    //private void HandleDragEnter()
-    //{
-    //    //if (ListStatus == Container.Payload.Status) return;
-
-    //    //if (AllowedStatuses != null && !AllowedStatuses.Contains(Container.Payload.Status))
-    //    //{
-    //    //    dropClass = "no-drop";
-    //    //}
-    //    //else
-    //    //{
-    //    //    dropClass = "can-drop";
-    //    //}
-    //}
-
-    //private void HandleDragLeave()
-    //{
-    //    //dropClass = "";
-    //}
-
-    //private async Task HandleDrop()
-    //{
-    //    //dropClass = "";
-
-    //    //if (AllowedStatuses != null && !AllowedStatuses.Contains(Container.Payload.Status)) return;
-
-    //    //await Container.UpdateJobAsync(ListStatus);
-    //}
 
 }
