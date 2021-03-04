@@ -13,7 +13,12 @@
         <div class="col">
             <div class="float-right">
                 <button class="btn btn-danger" @onclick="Reload"><span class="oi oi-reload"></span></button>
-                <button class="btn btn-danger" @onclick="Delete"><span class="oi oi-trash"></span></button>
+                <button class="btn btn-danger"
+                        draggable="true"
+                        ondragover="event.preventDefault();"
+                        @ondrop="(() => HandleDrop(functionName))">
+                    <span class="oi oi-trash"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -38,15 +43,18 @@
                 {
                     foreach (var item in todoLists)
                     {
-                        <List todoList="@item"></List>}
+                        <List todoList="@item" OnReturnItemId="ReturnItemId" OnReturnListId="@(((EventCallback<HandleDragStartArgs>)args) => ReturnListId((EventCallback<HandleDragStartArgs>)args))"></List>}
                 }
             </div>
         </div>
     </div>
 </div>
 @code {
+
     private List<TodoList> todoLists;
     private string newTodoText;
+    private int deleteId;
+    private string functionName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,8 +94,34 @@
 
     void Reload() => NavigationManager.NavigateTo("/TodoList/Index", true);
 
-    void Delete()
+    private async Task HandleDrop()
     {
+        //DeleteItem
+        if (deleteId <= 0) return;
 
+        var response = await Http.DeleteAsync($"api/TodoList/{functionName}/" + deleteId);
+
+        if (response.IsSuccessStatusCode)
+            NavigationManager.NavigateTo("/TodoList/Index", true);
+        else
+            Console.WriteLine(response.Content);
+    }
+
+    private void ReturnItemId(int itemId, string fxName)
+    {
+        deleteId = itemId;
+        functionName = fxName;
+    }
+
+    protected void ReturnListId(HandleDragStartArgs args)
+    {
+        deleteId = args.listId;
+        functionName = args.fxName;
+    }
+
+    public class HandleDragStartArgs
+    {
+        public int listId { get; set; }
+        public string fxName { get; set; }
     }
 }

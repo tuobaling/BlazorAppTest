@@ -3,46 +3,38 @@
 @using BlazorAppTest.Client.Models.ViewModels;
 @using System.Text.Json
 
-<div class="card-text">
+<div class="card-text" draggable="true"
+     @ondragstart="HandleDragStart">
     <div class="form-check">
-        @if (IsCompeleted)
+        @if (todoItem.Completed)
         {
-            <input class="form-check-input" @onchange="(() => UpdateCompleted(!IsCompeleted))" type="checkbox" value="" id="@ItemIndex" checked="checked">
-            <label class="form-check-label text-muted" for="@ItemIndex"><del>@TaskName</del></label>}
+            <input class="form-check-input" @onchange="(() => UpdateCompleted(!todoItem.Completed))" type="checkbox" value="" id="@todoItem.ItemId" checked="checked">
+            <label class="form-check-label text-muted" for="@todoItem.ItemId"><del>@todoItem.TaskName</del></label>}
         else
         {
-            <input class="form-check-input" @onchange="(() => UpdateCompleted(!IsCompeleted))" type="checkbox" value="" id="@ItemIndex">
-            <label class="form-check-label text-muted" for="@ItemIndex">@TaskName</label>}
+            <input class="form-check-input" @onchange="(() => UpdateCompleted(!todoItem.Completed))" type="checkbox" value="" id="@todoItem.ItemId">
+            <label class="form-check-label text-muted" for="@todoItem.ItemId">@todoItem.TaskName</label>}
 
     </div>
 </div>
 
 @code{
     [Parameter]
-    public string TaskName { get; set; }
+    public EventCallback<(int,string)> OnReturnItemId { get; set; }
 
     [Parameter]
-    public int ItemIndex { get; set; }
-
-    [Parameter]
-    public int Sort { get; set; }
-
-    [Parameter]
-    public int ParentId { get; set; }
-
-    [Parameter]
-    public bool IsCompeleted { get; set; }
+    public TodoItem todoItem { get; set; }
 
     private async Task UpdateCompleted(bool isCompeleted)
     {
         //// TODO:要加資料驗證
-        var todoItem = new TodoItem
+        var todoItemResponse = new TodoItem
         {
-            ItemId = ItemIndex,
+            ItemId = todoItem.ItemId,
             Completed = isCompeleted
         };
 
-        var jsonText = JsonSerializer.Serialize(todoItem);
+        var jsonText = JsonSerializer.Serialize(todoItemResponse);
         var response = await Http.PutAsJsonAsync<string>("api/TodoList/EditByItem", jsonText);
 
         if (response.IsSuccessStatusCode)
@@ -51,20 +43,6 @@
             Console.WriteLine(response.Content);
     }
 
-    //[Parameter]
-    //public EventCallback<int> DeleteItem { get; set; }
+    private async Task HandleDragStart() => await OnReturnItemId.InvokeAsync((todoItem.ItemId, "DeleteList"));
 
-    ////void Delete()
-    ////{
-    ////    DeleteItem.InvokeAsync(ItemIndex);
-    ////}
-
-    //private async Task Delete()
-    //{
-    //    bool result = await js.InvokeAsync<bool>("SweetConfirm", "Delete", $"確定要刪除{TaskName}?");
-    //    if (result)
-    //    {
-    //        await DeleteItem.InvokeAsync(ItemIndex);
-    //    }
-    //}
 }

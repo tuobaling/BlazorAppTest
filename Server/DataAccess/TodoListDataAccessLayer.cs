@@ -115,6 +115,22 @@ namespace BlazorAppTest.Server.DataAccess
             }
         }
 
+
+        //To Delete the record of a particular TodoItem    
+        public void DeleteTodoItem(int id)
+        {
+            try
+            {
+                TodoItem item = _dbcontext.TodoItems.Find(id);
+                _dbcontext.TodoItems.Remove(item);
+                _dbcontext.SaveChanges();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public int GetLastId()
         {
             try

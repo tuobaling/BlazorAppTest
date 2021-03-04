@@ -48,7 +48,7 @@ namespace BlazorAppTest.Server.Controllers
         public int GetLastSort() => objtodoList.GetLastSort();
 
         [HttpGet]
-        [Route("api/[controller]/GetLastSortByItem")]
+        [Route("api/[controller]/GetLastSortByItem/{listId}")]
         public int GetLastSortByItem(int listId) => objtodoList.GetLastSortByItem(listId);
 
         [HttpPost]
@@ -86,6 +86,13 @@ namespace BlazorAppTest.Server.Controllers
         public void Delete(int id)
         {
             objtodoList.DeleteTodoList(id);
+        }
+
+        [HttpDelete]
+        [Route("api/[controller]/DeleteItem/{itemId}")]
+        public void DeleteItem(int itemId)
+        {
+            objtodoList.DeleteTodoItem(itemId);
         }
     }
 }
