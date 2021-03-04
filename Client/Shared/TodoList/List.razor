@@ -39,8 +39,20 @@
     [Parameter]
     public TodoList todoList { get; set; }
 
-    private HandleDragStartArgs dragStartArgs = new HandleDragStartArgs();
+    [Parameter]
+    public HandleDragStartArgs dragStartArgs { get; set; }
+
     private string newItemText;
+
+    protected override Task OnInitializedAsync()
+    {
+        if (dragStartArgs == null)
+        {
+            dragStartArgs = new HandleDragStartArgs();
+        }
+
+        return Task.CompletedTask;
+    }
 
     private async Task AddTaskName(int? listId)
     {
@@ -65,7 +77,11 @@
             Console.WriteLine(response.Content);
     }
 
-    private async Task ReturnItemId() => await OnReturnItemId.InvokeAsync(dragStartArgs);
+    private async Task ReturnItemId(HandleDragStartArgs args)
+    {
+        dragStartArgs = args;
+        await OnReturnItemId.InvokeAsync(dragStartArgs);
+    }
     //new OnCheckEventArgs { IsChecked = checked, ItemId = @Id }
 
     //((int)todoList.ListId, "DeleteList")

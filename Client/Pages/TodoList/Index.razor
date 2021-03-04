@@ -64,6 +64,12 @@
             ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
             PropertyNamingPolicy = null
         });
+
+        if (dragStartArgs == null)
+        {
+            dragStartArgs = new HandleDragStartArgs();
+        }
+
     }
 
 

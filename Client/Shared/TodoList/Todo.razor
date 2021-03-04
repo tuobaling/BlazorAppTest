@@ -25,7 +25,18 @@
     [Parameter]
     public TodoItem todoItem { get; set; }
 
-    private HandleDragStartArgs dragStartArgs = new HandleDragStartArgs();
+    [Parameter]
+    public HandleDragStartArgs dragStartArgs { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        if (dragStartArgs == null)
+        {
+            dragStartArgs = new HandleDragStartArgs();
+        }
+
+        return Task.CompletedTask;
+    }
 
     private async Task UpdateCompleted(bool isCompeleted)
     {
