@@ -20,10 +20,12 @@
 
 @code{
     [Parameter]
-    public EventCallback<(int,string)> OnReturnItemId { get; set; }
+    public EventCallback<HandleDragStartArgs> OnReturnItemId { get; set; }
 
     [Parameter]
     public TodoItem todoItem { get; set; }
+
+    private HandleDragStartArgs dragStartArgs = new HandleDragStartArgs();
 
     private async Task UpdateCompleted(bool isCompeleted)
     {
@@ -43,6 +45,19 @@
             Console.WriteLine(response.Content);
     }
 
-    private async Task HandleDragStart() => await OnReturnItemId.InvokeAsync((todoItem.ItemId, "DeleteList"));
+    private async Task HandleDragStart()
+    {
+        dragStartArgs.listId = (int)todoItem.ItemId;
+        dragStartArgs.fxName = "DeleteItem";
 
+        await OnReturnItemId.InvokeAsync(dragStartArgs);
+
+    }
+
+
+    public class HandleDragStartArgs
+    {
+        public int listId { get; set; }
+        public string fxName { get; set; }
+    }
 }

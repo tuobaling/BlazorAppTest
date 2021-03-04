@@ -82,10 +82,11 @@ namespace BlazorAppTest.Server.Controllers
         }
 
         [HttpDelete]
-        [Route("api/[controller]/Delete/{id}")]
-        public void Delete(int id)
+        [Route("api/[controller]/DeletelList/{itemId}")]
+        public void Delete(int itemId)
         {
-            objtodoList.DeleteTodoList(id);
+            var t = itemId;
+            //objtodoList.DeleteTodoList(itemId);
         }
 
         [HttpDelete]
@@ -94,5 +95,7 @@ namespace BlazorAppTest.Server.Controllers
         {
             objtodoList.DeleteTodoItem(itemId);
         }
+
+        
     }
 }
