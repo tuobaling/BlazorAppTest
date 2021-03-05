@@ -1,7 +1,12 @@
 ﻿@inject HttpClient Http
 @inject NavigationManager NavigationManager
 @using System.Text.Json
-@using BlazorAppTest.Client.Models.ViewModels; @*排序+刪除沒用的*@
+@using BlazorAppTest.Client.Models.ViewModels;
+@using BlazorAppTest.Client.Shared.TodoList;
+
+@*<button class="btn btn-primary" @onclick="TrySave">
+        保存
+    </button>*@
 
 <div class="card">
     <h5 class="card-header"
@@ -24,7 +29,7 @@
 
         @foreach (var item in todoList.TodoItems)
         {
-            <Todo todoItem="@item" OnReturnId="ReturnId" />}
+            <Todo todoItem="@item" OnReturnItemId="ReturnItemId" />}
     </div>
 
 </div>
@@ -34,10 +39,15 @@
     public TodoListViewModel dragStartArgs { get; set; }
 
     [Parameter]
-    public EventCallback<TodoListViewModel> OnReturnId { get; set; } //因為作用一樣所以留一個
+    public EventCallback<TodoListViewModel> OnReturnListId { get; set; }
+
+    [Parameter]
+    public EventCallback<TodoListViewModel> OnReturnItemId { get; set; }
 
     [Parameter]
     public TodoList todoList { get; set; }
+
+
 
     private string newItemText;
 
@@ -51,48 +61,43 @@
         return Task.CompletedTask;
     }
 
-    private async Task AddTaskName(int? listId) //改為SPA動態更新不重整
+    private async Task AddTaskName(int? listId)
     {
         // TODO:要加資料驗證
         int lastSort = await Http.GetFromJsonAsync<int>("/api/TodoList/GetLastSortByItem/" + listId);
+        int newSort = lastSort + 1;
 
         var todoItemResponse = new TodoItem()
         {
-            ListId =todoList.ListId,
-            Sort = lastSort + 1, //必定會跑來這的話，可以省下一次宣告，但為了語意清楚也可以宣告在上面
+            ListId = (int)todoList.ListId,
+            Sort = newSort,
             TaskName = newItemText,
             Completed = false
         };
 
-        var response = await Http.PostAsJsonAsync<TodoItem>("api/TodoList/CreateTask", todoItemResponse); //改以物件傳遞，因為PostAsJsonAsync本來就會自動序列化為Json，同時接回物件取得Id
+        var jsonText = JsonSerializer.Serialize(todoItemResponse);
+        var response = await Http.PostAsJsonAsync<string>("api/TodoList/CreateTask", jsonText);
 
         if (response.IsSuccessStatusCode)
-        {
-            var newItemFromDb = await response.Content.ReadFromJsonAsync<TodoItem>(new JsonSerializerOptions //從資料庫回傳新增資料
-            {
-                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve, //接回來的Json防止循環參考
-                PropertyNamingPolicy = null //Json欄位命名規則不改變
-            });
-
-            todoList.TodoItems.Add(newItemFromDb); //為了更新畫面而寫回todoLists
-            await InvokeAsync(() => base.StateHasChanged()); //重新建構畫面元件
-
-            Console.WriteLine("It's Scuessed !"); //將訊息寫在這
-        }
+            NavigationManager.NavigateTo("/TodoList/Index", true);
         else
-            Console.WriteLine("It's Failed !"); //將訊息寫在這
+            Console.WriteLine(response.Content);
     }
 
-    private async Task ReturnId(TodoListViewModel args) => await OnReturnId.InvokeAsync(args); //單純喜歡一行
-
+    private async Task ReturnItemId(TodoListViewModel args)
+    {
+        dragStartArgs = args;
+        await OnReturnItemId.InvokeAsync(dragStartArgs);
+    }
     //new OnCheckEventArgs { IsChecked = checked, ItemId = @Id }
 
     //((int)todoList.ListId, "DeleteList")
     private async Task HandleDragStart()
     {
-        dragStartArgs.listId =todoList.ListId;
+        dragStartArgs.listId = (int)todoList.ListId;
         dragStartArgs.fxName = "DeleteList";
 
-        await OnReturnId.InvokeAsync(dragStartArgs);
+        await OnReturnListId.InvokeAsync(dragStartArgs);
     }
+
 }

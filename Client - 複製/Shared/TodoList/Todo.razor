@@ -1,0 +1,67 @@
+﻿@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using BlazorAppTest.Client.Models.ViewModels;
+@using System.Text.Json
+
+<div class="card-text" draggable="true"
+     @ondragstart="HandleDragStart">
+    <div class="form-check">
+        @if (todoItem.Completed)
+        {
+            <input class="form-check-input" @onchange="(() => UpdateCompleted(!todoItem.Completed))" type="checkbox" value="" id="@todoItem.ItemId" checked="checked">
+            <label class="form-check-label text-muted" for="@todoItem.ItemId"><del>@todoItem.TaskName</del></label>}
+        else
+        {
+            <input class="form-check-input" @onchange="(() => UpdateCompleted(!todoItem.Completed))" type="checkbox" value="" id="@todoItem.ItemId">
+            <label class="form-check-label text-muted" for="@todoItem.ItemId">@todoItem.TaskName</label>}
+
+    </div>
+</div>
+
+@code{
+    [Parameter]
+    public EventCallback<TodoListViewModel> OnReturnItemId { get; set; }
+
+    [Parameter]
+    public TodoItem todoItem { get; set; }
+
+    [Parameter]
+    public TodoListViewModel dragStartArgs { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        if (dragStartArgs == null)
+        {
+            dragStartArgs = new TodoListViewModel();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task UpdateCompleted(bool isCompeleted)
+    {
+        //// TODO:要加資料驗證
+        var todoItemResponse = new TodoItem
+        {
+            ItemId = todoItem.ItemId,
+            Completed = isCompeleted
+        };
+
+        var jsonText = JsonSerializer.Serialize(todoItemResponse);
+        var response = await Http.PutAsJsonAsync<string>("api/TodoList/EditByItem", jsonText);
+
+        if (response.IsSuccessStatusCode)
+            NavigationManager.NavigateTo("/TodoList/Index", true);
+        else
+            Console.WriteLine(response.Content);
+    }
+
+    private async Task HandleDragStart()
+    {
+        dragStartArgs.listId = (int)todoItem.ItemId;
+        dragStartArgs.fxName = "DeleteItem";
+
+        await OnReturnItemId.InvokeAsync(dragStartArgs);
+
+    }
+}

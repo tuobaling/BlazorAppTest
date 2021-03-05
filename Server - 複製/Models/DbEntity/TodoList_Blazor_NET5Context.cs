@@ -39,6 +39,7 @@ namespace BlazorAppTest.Server.Models.DbEntity
                 entity.HasOne(d => d.List)
                     .WithMany(p => p.TodoItems)
                     .HasForeignKey(d => d.ListId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_TodoItem_TodoList");
             });
 

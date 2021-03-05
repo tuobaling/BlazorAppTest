@@ -6,21 +6,23 @@
 <div class="card-text" draggable="true"
      @ondragstart="HandleDragStart">
     <div class="form-check">
-        @if (todoItem.Completed)
-        {
-            <input class="form-check-input" @onchange="(() => UpdateCompleted(!todoItem.Completed))" type="checkbox" value="" id="@todoItem.ItemId" checked="checked">
-            <label class="form-check-label text-muted" for="@todoItem.ItemId"><del>@todoItem.TaskName</del></label>}
-        else
-        {
-            <input class="form-check-input" @onchange="(() => UpdateCompleted(!todoItem.Completed))" type="checkbox" value="" id="@todoItem.ItemId">
-            <label class="form-check-label text-muted" for="@todoItem.ItemId">@todoItem.TaskName</label>}
-
+        @*//透過Lambda的e傳遞事件中的值*@
+        <input class="form-check-input" @onchange="(e => UpdateCompleted(e.Value))" type="checkbox" value="" id="@todoItem.ItemId" checked="@todoItem.Completed">
+        <label class="form-check-label text-muted" for="@todoItem.ItemId">
+            @if (todoItem.Completed)
+            {
+                <del>@todoItem.TaskName</del>}
+            else
+            {
+                @todoItem.TaskName
+            }
+        </label>
     </div>
 </div>
 
 @code{
     [Parameter]
-    public EventCallback<TodoListViewModel> OnReturnItemId { get; set; }
+    public EventCallback<TodoListViewModel> OnReturnId { get; set; }
 
     [Parameter]
     public TodoItem todoItem { get; set; }
@@ -38,30 +40,30 @@
         return Task.CompletedTask;
     }
 
-    private async Task UpdateCompleted(bool isCompeleted)
+    private async Task UpdateCompleted(object isCompeleted) //改為SPA動態更新不重整
     {
         //// TODO:要加資料驗證
-        var todoItemResponse = new TodoItem
-        {
-            ItemId = todoItem.ItemId,
-            Completed = isCompeleted
-        };
+        todoItem.Completed = (bool)isCompeleted; //直接改物件的值
 
-        var jsonText = JsonSerializer.Serialize(todoItemResponse);
-        var response = await Http.PutAsJsonAsync<string>("api/TodoList/EditByItem", jsonText);
+        var response = await Http.PutAsJsonAsync<TodoItem>("api/TodoList/EditByItem", todoItem); //改以物件傳遞，因為PostAsJsonAsync本來就會自動序列化為Json，同時接回物件取得Id
 
         if (response.IsSuccessStatusCode)
-            NavigationManager.NavigateTo("/TodoList/Index", true);
+            Console.WriteLine("It's Scuessed !"); //將訊息寫在這
         else
-            Console.WriteLine(response.Content);
+        {
+            todoItem.Completed = todoItem.Completed; //失敗還原
+            Console.WriteLine("It's Failed !"); //將訊息寫在這
+        }
+
+        await InvokeAsync(() => base.StateHasChanged()); //重新建構畫面元件，無倫成功與否都要把畫面更新和資料庫一致
     }
 
     private async Task HandleDragStart()
     {
-        dragStartArgs.listId = (int)todoItem.ItemId;
+        dragStartArgs.listId = todoItem.ItemId;
         dragStartArgs.fxName = "DeleteItem";
 
-        await OnReturnItemId.InvokeAsync(dragStartArgs);
+        await OnReturnId.InvokeAsync(dragStartArgs);
 
     }
 }

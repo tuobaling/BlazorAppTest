@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 @using System.Text.Json
 @using BlazorAppTest.Client.Models.ViewModels;
-@using BlazorAppTest.Client.Shared.TodoList; @*排序+刪除沒用的*@
+@using BlazorAppTest.Client.Shared.TodoList;
 
 <h1>TodoList</h1>
 <p>This component demonstrates fetching TodoList data from the server.</p>
@@ -36,15 +36,17 @@
     <div class="row">
         <div class="col">
             <div class="card-deck">
-                @if (todoLists == null) //@{ }如果沒特別宣告什麼可以直接黏著if或者foreach開始
-                {
-                    <p><em>Loading...</em></p>
-                }
-                else
-                {
-                    foreach (var item in todoLists)
+                @{
+                    if (todoLists == null)
                     {
-                        <List todoList="@item" OnReturnId="ReturnId"></List>
+                        <p><em>Loading...</em></p>
+                    }
+                    else
+                    {
+                        foreach (var item in todoLists)
+                        {
+                            <List todoList="@item" OnReturnListId="ReturnListId" OnReturnItemId="ReturnItemId"></List>
+                        }
                     }
                 }
             </div>
@@ -52,12 +54,13 @@
     </div>
 </div>
 @code {
+
     private TodoListViewModel dragStartArgs { get; set; }
 
     private List<TodoList> todoLists;
 
     private string newTodoText;
-    private string functionName; //好像沒用?
+    private string functionName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,45 +77,36 @@
 
     }
 
-    private async Task AddListName() //改為SPA動態更新不重整
+
+    private async Task AddListName()
     {
         //TODO:要加資料驗證
         if (!string.IsNullOrEmpty(newTodoText))
         {
-            int lastSort = await Http.GetFromJsonAsync<int>("api/TodoList/GetLastSort");
+            int lastSort = await Http.GetFromJsonAsync<int>("/api/TodoList/GetLastSort");
+            int newSort = lastSort + 1;
 
             var todoList = new TodoList()
             {
                 Title = newTodoText,
-                Sort = lastSort + 1 //必定會跑來這的話，可以省下一次宣告，但為了語意清楚也可以宣告在上面
+                Sort = newSort
             };
 
-            var response = await Http.PostAsJsonAsync<TodoList>("api/TodoList/CreateList", todoList); //改以物件傳遞，因為PostAsJsonAsync本來就會自動序列化為Json，同時接回物件取得Id
+            var jsonText = JsonSerializer.Serialize(todoList);
+
+            var response = await Http.PostAsJsonAsync<string>("api/TodoList/CreateList", jsonText);
 
             if (response.IsSuccessStatusCode)
-            {
-                var newItemFromDb = await response.Content.ReadFromJsonAsync<TodoList>(new JsonSerializerOptions //從資料庫回傳新增資料
-                {
-                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve, //接回來的Json防止循環參考
-                    PropertyNamingPolicy = null //Json欄位命名規則不改變
-                });
-
-                await InvokeAsync(() =>
-                {
-                    todoLists.Insert(0, newItemFromDb); //為了更新畫面而寫回todoLists
-                    base.StateHasChanged(); //重新建構畫面元件
-                });
-
-                Console.WriteLine("It's Scuessed !"); //將訊息寫在這
-            }
+                NavigationManager.NavigateTo("/TodoList/Index", true);
             else
-                Console.WriteLine("It's Failed !"); //將訊息寫在這
+                Console.WriteLine(response.Content);
+
         }
     }
 
     void Reload() => NavigationManager.NavigateTo("/TodoList/Index", true);
 
-    private async Task HandleDrop() //改為SPA動態更新不重整
+    private async Task HandleDrop()
     {
         //DeleteItem
         if (dragStartArgs == null) return;
@@ -120,21 +114,19 @@
         var response = await Http.DeleteAsync($"api/TodoList/{dragStartArgs.fxName}/" + dragStartArgs.listId);
 
         if (response.IsSuccessStatusCode)
-        {
-            await InvokeAsync(() =>
-            {
-                if (dragStartArgs.fxName == "DeleteList") //判斷種類
-                    todoLists.Remove(todoLists.FirstOrDefault(x => x.ListId == dragStartArgs.listId)); //為了更新畫面而寫回todoLists
-                else
-                    todoLists.ForEach(x => x.TodoItems.Remove(x.TodoItems.FirstOrDefault(x => x.ItemId == dragStartArgs.listId))); //為了更新畫面而寫回todoLists，有點遭
-
-                base.StateHasChanged(); //重新建構畫面元件
-            });
-        }
+            NavigationManager.NavigateTo("/TodoList/Index", true);
         else
             Console.WriteLine(response.Content);
 
     }
 
-    private void ReturnId(TodoListViewModel args) => dragStartArgs = args; //因為作用一樣所以留一個
+    private void ReturnItemId(TodoListViewModel args)
+    {
+        dragStartArgs = args;
+    }
+
+    private void ReturnListId(TodoListViewModel args)
+    {
+        dragStartArgs = args;
+    }
 }

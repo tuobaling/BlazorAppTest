@@ -1,0 +1,61 @@
+﻿@page "/AntTabs"
+<!--AntTabs.razor-->
+@foreach (var pane in Panes)
+{
+    <div draggable="true"
+         ondragover="event.preventDefault();"
+         @ondragstart="(e)=>HandleDragStart(e, pane)" @ondrop="(e)=>HandleDrop(e, pane)">@pane.DropEffect</div>
+    }
+
+@code{
+
+    // AntTabs.razor.cs
+
+    // 标题组件集合
+    internal List<AntTabPane> Panes = new List<AntTabPane>();
+
+    // 拖动中的tabs标题
+    private AntTabPane _draggingPane;
+
+    //初始化
+    protected override void OnInitialized()
+    {
+        Panes.Add(new AntTabPane { DropEffect = "Mow the lawn", EffectAllowed = "hi~1" });
+        Panes.Add(new AntTabPane { DropEffect = "Go to the gym", EffectAllowed = "hi~2" });
+        Panes.Add(new AntTabPane { DropEffect = "Call Ollie", EffectAllowed = "hi~3" });
+        Panes.Add(new AntTabPane { DropEffect = "Fix bike tyre", EffectAllowed = "hi~4" });
+        Panes.Add(new AntTabPane { DropEffect = "Finish blog post", EffectAllowed = "hi~5" });
+    }
+
+    //ondragstart事件处理方法
+    private void HandleDragStart(DragEventArgs args, AntTabPane pane)
+    {
+        // 设置拖动效果为"move"
+        args.DataTransfer.DropEffect = "move";
+        args.DataTransfer.EffectAllowed = "move";
+        // 设置拖动标题
+        _draggingPane = pane;
+    }
+
+    // ondrop事件处理方法
+    private void HandleDrop(DragEventArgs args, AntTabPane pane)
+    {
+        // 获取新index
+        int newIndex = Panes.IndexOf(pane);
+        // 移除拖动中的标题
+        Panes.Remove(_draggingPane);
+        // 将拖动中的标题插入至新位置
+        Panes.Insert(newIndex, _draggingPane);
+        // 重设拖动标题为空
+        _draggingPane = null;
+        //...省略若干代码
+        // 刷新界面
+        StateHasChanged();
+    }
+
+    public class AntTabPane
+    {
+        public string DropEffect { get; set; }
+        public string EffectAllowed { get; set; }
+    }
+}
